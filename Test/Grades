@@ -7,20 +7,11 @@ Calificaciones
     Content-Type: application/json
 - Body:
     {
-      "studentId": 1,
-      "subjectId": 2,
-      "grade": 95
+      "student_id": 2,
+      "subject_id": 1,
+      "grade": 95.5
     }
-    {
-      "studentId": 2,
-      "subjectId": 3,
-      "grade": 88
-    }
-    {
-      "studentId": 3,
-      "subjectId": 1,
-      "grade": 76
-    }
+
 
 2.-Actualizar Calificación
 -Método: PUT
@@ -30,11 +21,3 @@ Calificaciones
 -Método: DELETE
 -URL: http://localhost:8082/api/grades/{id}
 
-
-4.-Obtener Calificación de una materia para un estudiante
--Método: GET
--URL: http://localhost:8082/api/grades/{gradeId}/student/{studentId}
-
-5.-Obtener todas las Calificaciones de un estudiante
--Método: GET
--URL: http://localhost:8082/api/grades/student/{studentId}

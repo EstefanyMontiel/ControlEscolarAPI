@@ -27,6 +27,7 @@
 3. Obtener estudiante por ID
 -Método: GET
 -URL: http://localhost:8082/api/students/{id}
+    Ej. http://localhost:8082/api/students/6
 
 4. Actualizar estudiante
 -Método: PUT
