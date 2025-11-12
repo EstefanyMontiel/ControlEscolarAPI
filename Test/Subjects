@@ -1,0 +1,37 @@
+
+1.- Crear Materia 
+-Metodo: POST
+-URL: http://localhost:8082/api/subjects
+- Headers:
+    Content-Type: application/json
+- Body:
+        {
+          "name": "Matemáticas"
+        }
+        {
+          "name": "Historia"
+        }
+        {
+          "name": "Ciencias"
+        }
+        {
+          "name": "Inglés"
+        }
+
+2.- Obtener materia
+-Metodo: GET
+-URL: http://localhost:8082/api/subjects/{id}
+    Ej. http://localhost:8082/api/subjects/3
+
+3.- Actualizar materia
+-Metodo: PUT
+-URL: http://localhost:8082/api/subjects/{id}
+- Headers:
+    Content-Type: application/json
+- Body:{
+          "name": "Inglés"
+        }
+
+4.- Eliminar materia
+-Metodo: DELETE
+-URL: http://localhost:8082/api/subjects/{id}

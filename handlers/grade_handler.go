@@ -1,6 +1,7 @@
 package handlers
 
 import (
+    "log"
     "net/http"
     "strconv"
     
@@ -107,14 +108,26 @@ func GetGradeByStudentAndSubject(c *gin.Context) {
         return
     }
     
+    // Buscar la calificación
     var grade models.Grade
     if err := config.GetDB().
-        Preload("Student").
-        Preload("Subject").
         Where("grade_id = ? AND student_id = ?", gradeID, studentID).
         First(&grade).Error; err != nil {
+        log.Printf("Error buscando calificación: %v", err)
         utils.RespondWithError(c, http.StatusNotFound, "Calificación no encontrada")
         return
+    }
+    
+    // Obtener información del estudiante
+    var student models.Student
+    if err := config.GetDB().First(&student, grade.StudentID).Error; err == nil {
+        grade.Student = &student
+    }
+    
+    // Obtener información de la materia
+    var subject models.Subject
+    if err := config.GetDB().First(&subject, grade.SubjectID).Error; err == nil {
+        grade.Subject = &subject
     }
     
     c.JSON(http.StatusOK, grade)
@@ -135,13 +148,22 @@ func GetStudentGrades(c *gin.Context) {
         return
     }
     
+    // Obtener todas las calificaciones del estudiante
     var grades []models.Grade
     if err := config.GetDB().
-        Preload("Subject").
         Where("student_id = ?", studentID).
         Find(&grades).Error; err != nil {
+        log.Printf("Error obteniendo calificaciones: %v", err)
         utils.RespondWithError(c, http.StatusInternalServerError, "Error al obtener calificaciones")
         return
+    }
+    
+    // Cargar manualmente la información de las materias para cada calificación
+    for i := range grades {
+        var subject models.Subject
+        if err := config.GetDB().First(&subject, grades[i].SubjectID).Error; err == nil {
+            grades[i].Subject = &subject
+        }
     }
     
     c.JSON(http.StatusOK, grades)

@@ -2,47 +2,66 @@ package main
 
 import (
     "log"
+    "os"
     
     "github.com/gin-gonic/gin"
-	"ControlEscolar/config"
-	"ControlEscolar/models"
+    "github.com/joho/godotenv"
+    "ControlEscolar/config"
+    "ControlEscolar/models"
     "ControlEscolar/routes"
 )
 
 func main() {
+    // Cargar variables de entorno
+    err := godotenv.Load()
+    if err != nil {
+        log.Println("⚠️  Advertencia: No se encontró archivo .env")
+    } else {
+        log.Println("✅ Archivo .env cargado correctamente")
+    }
+    
     // Inicializar base de datos
     config.InitDatabase()
     
-    // Ejecutar migraciones
     db := config.GetDB()
+        
+    // Paso 1: Crear tablas padre (sin llaves foráneas)
+    log.Println("📦 Creando tablas padre...")
     if err := models.MigrateStudent(db); err != nil {
-        log.Fatal("Error en migración de estudiantes:", err)
+        log.Fatal("❌ Error en migración de estudiantes:", err)
     }
+    log.Println("✅ Tabla students creada")
+    
     if err := models.MigrateSubject(db); err != nil {
-        log.Fatal("Error en migración de materias:", err)
+        log.Fatal("❌ Error en migración de materias:", err)
     }
+    log.Println("✅ Tabla subjects creada")
+    
+    // Paso 2: Crear tabla hija (sin llaves foráneas todavía)
+    log.Println("📦 Creando tabla grades...")
     if err := models.MigrateGrade(db); err != nil {
-        log.Fatal("Error en migración de calificaciones:", err)
+        log.Fatal("❌ Error en migración de calificaciones:", err)
+    }
+    log.Println("✅ Tabla grades creada")
+    
+    // Paso 3: Agregar llaves foráneas
+    log.Println("🔗 Agregando llaves foráneas...")
+    if err := models.AddForeignKeys(db); err != nil {
+        log.Println("⚠️  Advertencia al agregar llaves foráneas:", err)
+    } else {
+        log.Println("✅ Llaves foráneas agregadas")
     }
     
-    log.Println("Migraciones ejecutadas exitosamente")
+    log.Println("✅ Todas las migraciones ejecutadas exitosamente")
     
     // Configurar Gin
     router := gin.Default()
     
-    // Middleware para CORS (opcional)
-    router.Use(func(c *gin.Context) {
-        c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-        c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-        c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-        
-        if c.Request.Method == "OPTIONS" {
-            c.AbortWithStatus(204)
-            return
-        }
-        
-        c.Next()
-    })
+    // Configurar proxies confiables (quita el warning)
+    router.SetTrustedProxies(nil)
+    
+    // Middleware para CORS
+    router.Use(CORSMiddleware())
     
     // Configurar rutas
     routes.SetupRoutes(router)
@@ -52,12 +71,35 @@ func main() {
         c.JSON(200, gin.H{
             "message": "API de Control Escolar - Sistema funcionando correctamente",
             "version": "1.0.0",
+            "database": "MySQL",
         })
     })
     
+    // Obtener puerto desde variable de entorno
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "8082"
+    }
+    
     // Iniciar servidor
-    log.Println("Servidor iniciado en http://localhost:8080")
-    if err := router.Run(":8080"); err != nil {
-        log.Fatal("Error al iniciar servidor:", err)
+    log.Printf("🚀 Servidor iniciado en http://localhost:%s\n", port)
+    if err := router.Run(":" + port); err != nil {
+        log.Fatal("❌ Error al iniciar servidor:", err)
+    }
+}
+
+// CORSMiddleware configura CORS
+func CORSMiddleware() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+        c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        
+        if c.Request.Method == "OPTIONS" {
+            c.AbortWithStatus(204)
+            return
+        }
+        
+        c.Next()
     }
 }

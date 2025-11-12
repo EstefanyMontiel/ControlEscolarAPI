@@ -1,0 +1,47 @@
+1. Crear estudiante 
+-Método: POST
+-URL: http://localhost:8082/api/students
+- Headers:
+    Content-Type: application/json
+- Body:
+    {
+        "name": "John Doe",
+        "group": "1A",
+        "email": "johndoe@example.com"
+    }
+    {
+    "name": "Juan Pérez",
+    "group": "5A",
+    "email": "juan.perez@escuela.com"
+    }
+    {
+    "name": "Ana Martínez",
+    "group": "4B",
+    "email": "ana.martinez@escuela.com"
+    }
+
+2. Obtener todos los estudiantes
+-Método: GET
+-URL: http://localhost:8082/api/students
+
+3. Obtener estudiante por ID
+-Método: GET
+-URL: http://localhost:8082/api/students/{id}
+    Ej. http://localhost:8082/api/students/6
+
+4. Actualizar estudiante
+-Método: PUT
+-URL: http://localhost:8082/api/students/{id}
+- Headers:
+    Content-Type: application/json
+- Body:
+    {
+        "name": "Jane Doe",
+        "group": "1B",
+        "email": "janedoe@example.com"  
+    }
+
+5. Eliminar estudiante
+-Método: DELETE
+-URL: http://localhost:8082/api/students/{id}
+

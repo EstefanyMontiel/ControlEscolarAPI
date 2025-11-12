@@ -1,0 +1,23 @@
+Calificaciones
+
+1.- Crear Calificación
+-Método: POST
+-URL: http://localhost:8082/api/grades
+- Headers:
+    Content-Type: application/json
+- Body:
+    {
+      "student_id": 2,
+      "subject_id": 1,
+      "grade": 95.5
+    }
+
+
+2.-Actualizar Calificación
+-Método: PUT
+-URL: http://localhost:8082/api/grades/{id}
+
+3.-Eliminar Calificación
+-Método: DELETE
+-URL: http://localhost:8082/api/grades/{id}
+
