@@ -17,32 +17,39 @@ import (
 // @Tags         grades
 // @Accept       json
 // @Produce      json
-// @Param        grade  body      models.Grade  true  "Información de la calificación"
-// @Success      201    {object}  utils.SuccessResponse{data=models.Grade}
+// @Param        grade  body      models.CreateGradeRequest  true  "Información de la calificación"
+// @Success      201    {object}  utils.SuccessResponse{data=models.GradeResponse}
 // @Failure      400    {object}  utils.ErrorResponse
 // @Failure      404    {object}  utils.ErrorResponse
 // @Failure      500    {object}  utils.ErrorResponse
 // @Router       /grades [post]
 func CreateGrade(c *gin.Context) {
-    var grade models.Grade
+    var request models.CreateGradeRequest
     
-    if err := c.ShouldBindJSON(&grade); err != nil {
+    if err := c.ShouldBindJSON(&request); err != nil {
         utils.RespondWithError(c, http.StatusBadRequest, "Datos inválidos: "+err.Error())
         return
     }
     
     // Verificar que el estudiante existe
     var student models.Student
-    if err := config.GetDB().First(&student, grade.StudentID).Error; err != nil {
+    if err := config.GetDB().First(&student, request.StudentID).Error; err != nil {
         utils.RespondWithError(c, http.StatusNotFound, "Estudiante no encontrado")
         return
     }
     
     // Verificar que la materia existe
     var subject models.Subject
-    if err := config.GetDB().First(&subject, grade.SubjectID).Error; err != nil {
+    if err := config.GetDB().First(&subject, request.SubjectID).Error; err != nil {
         utils.RespondWithError(c, http.StatusNotFound, "Materia no encontrada")
         return
+    }
+    
+    // Crear el registro de calificación
+    grade := models.Grade{
+        StudentID: request.StudentID,
+        SubjectID: request.SubjectID,
+        Grade:     request.Grade,
     }
     
     if err := config.GetDB().Create(&grade).Error; err != nil {
@@ -50,7 +57,25 @@ func CreateGrade(c *gin.Context) {
         return
     }
     
-    utils.RespondWithSuccess(c, http.StatusCreated, "Calificación creada exitosamente", grade)
+    // Preparar respuesta con información completa
+    response := models.GradeResponse{
+        GradeID:   grade.GradeID,
+        StudentID: grade.StudentID,
+        SubjectID: grade.SubjectID,
+        Grade:     grade.Grade,
+        Student: &models.StudentBasic{
+            StudentID: student.StudentID,
+            Name:      student.Name,
+            Group:     student.Group,
+            Email:     student.Email,
+        },
+        Subject: &models.SubjectBasic{
+            SubjectID: subject.SubjectID,
+            Name:      subject.Name,
+        },
+    }
+    
+    utils.RespondWithSuccess(c, http.StatusCreated, "Calificación creada exitosamente", response)
 }
 
 // UpdateGrade godoc
@@ -59,9 +84,9 @@ func CreateGrade(c *gin.Context) {
 // @Tags         grades
 // @Accept       json
 // @Produce      json
-// @Param        grade_id  path      int           true  "ID de la calificación"
-// @Param        grade     body      models.Grade  true  "Nueva información de la calificación"
-// @Success      200       {object}  utils.SuccessResponse{data=models.Grade}
+// @Param        grade_id  path      int                        true  "ID de la calificación"
+// @Param        grade     body      models.UpdateGradeRequest  true  "Nueva calificación"
+// @Success      200       {object}  utils.SuccessResponse{data=models.GradeResponse}
 // @Failure      400       {object}  utils.ErrorResponse
 // @Failure      404       {object}  utils.ErrorResponse
 // @Failure      500       {object}  utils.ErrorResponse
@@ -79,20 +104,44 @@ func UpdateGrade(c *gin.Context) {
         return
     }
     
-    var updatedData models.Grade
-    if err := c.ShouldBindJSON(&updatedData); err != nil {
+    var request models.UpdateGradeRequest
+    if err := c.ShouldBindJSON(&request); err != nil {
         utils.RespondWithError(c, http.StatusBadRequest, "Datos inválidos: "+err.Error())
         return
     }
     
-    grade.Grade = updatedData.Grade
+    // Actualizar solo el campo grade
+    grade.Grade = request.Grade
     
     if err := config.GetDB().Save(&grade).Error; err != nil {
         utils.RespondWithError(c, http.StatusInternalServerError, "Error al actualizar calificación")
         return
     }
     
-    utils.RespondWithSuccess(c, http.StatusOK, "Calificación actualizada exitosamente", grade)
+    // Obtener información completa para la respuesta
+    var student models.Student
+    var subject models.Subject
+    config.GetDB().First(&student, grade.StudentID)
+    config.GetDB().First(&subject, grade.SubjectID)
+    
+    response := models.GradeResponse{
+        GradeID:   grade.GradeID,
+        StudentID: grade.StudentID,
+        SubjectID: grade.SubjectID,
+        Grade:     grade.Grade,
+        Student: &models.StudentBasic{
+            StudentID: student.StudentID,
+            Name:      student.Name,
+            Group:     student.Group,
+            Email:     student.Email,
+        },
+        Subject: &models.SubjectBasic{
+            SubjectID: subject.SubjectID,
+            Name:      subject.Name,
+        },
+    }
+    
+    utils.RespondWithSuccess(c, http.StatusOK, "Calificación actualizada exitosamente", response)
 }
 
 // DeleteGrade godoc
@@ -134,7 +183,7 @@ func DeleteGrade(c *gin.Context) {
 // @Produce      json
 // @Param        grade_id    path      int  true  "ID de la calificación"
 // @Param        student_id  path      int  true  "ID del estudiante"
-// @Success      200         {object}  models.Grade
+// @Success      200         {object}  models.GradeResponse
 // @Failure      400         {object}  utils.ErrorResponse
 // @Failure      404         {object}  utils.ErrorResponse
 // @Router       /grades/{grade_id}/student/{student_id} [get]
@@ -161,8 +210,30 @@ func GetGradeByStudentAndSubject(c *gin.Context) {
         return
     }
     
+    // Obtener información del estudiante y materia
+    var student models.Student
+    var subject models.Subject
+    config.GetDB().First(&student, grade.StudentID)
+    config.GetDB().First(&subject, grade.SubjectID)
     
-    c.JSON(http.StatusOK, grade)
+    response := models.GradeResponse{
+        GradeID:   grade.GradeID,
+        StudentID: grade.StudentID,
+        SubjectID: grade.SubjectID,
+        Grade:     grade.Grade,
+        Student: &models.StudentBasic{
+            StudentID: student.StudentID,
+            Name:      student.Name,
+            Group:     student.Group,
+            Email:     student.Email,
+        },
+        Subject: &models.SubjectBasic{
+            SubjectID: subject.SubjectID,
+            Name:      subject.Name,
+        },
+    }
+    
+    c.JSON(http.StatusOK, response)
 }
 
 // GetStudentGrades godoc
@@ -171,7 +242,7 @@ func GetGradeByStudentAndSubject(c *gin.Context) {
 // @Tags         grades
 // @Produce      json
 // @Param        student_id  path      int  true  "ID del estudiante"
-// @Success      200         {array}   models.Grade
+// @Success      200         {array}   models.GradeResponse
 // @Failure      400         {object}  utils.ErrorResponse
 // @Failure      404         {object}  utils.ErrorResponse
 // @Failure      500         {object}  utils.ErrorResponse
@@ -200,12 +271,30 @@ func GetStudentGrades(c *gin.Context) {
         return
     }
     
-    // Cargar manualmente la información de las materias para cada calificación
-    for i := range grades {
+    // Preparar respuestas con información completa
+    var responses []models.GradeResponse
+    for _, grade := range grades {
         var subject models.Subject
-        if err := config.GetDB().First(&subject, grades[i].SubjectID).Error; err == nil {
+        config.GetDB().First(&subject, grade.SubjectID)
+        
+        response := models.GradeResponse{
+            GradeID:   grade.GradeID,
+            StudentID: grade.StudentID,
+            SubjectID: grade.SubjectID,
+            Grade:     grade.Grade,
+            Student: &models.StudentBasic{
+                StudentID: student.StudentID,
+                Name:      student.Name,
+                Group:     student.Group,
+                Email:     student.Email,
+            },
+            Subject: &models.SubjectBasic{
+                SubjectID: subject.SubjectID,
+                Name:      subject.Name,
+            },
         }
+        responses = append(responses, response)
     }
     
-    c.JSON(http.StatusOK, grades)
+    c.JSON(http.StatusOK, responses)
 }

@@ -10,7 +10,7 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "Soporte API",
+            "name": "Estefany Montiel",
             "email": "estefany.montiel@example.com"
         },
         "license": {
@@ -42,7 +42,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Grade"
+                            "$ref": "#/definitions/models.CreateGradeRequest"
                         }
                     }
                 ],
@@ -58,7 +58,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.Grade"
+                                            "$ref": "#/definitions/models.GradeResponse"
                                         }
                                     }
                                 }
@@ -111,7 +111,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Grade"
+                                "$ref": "#/definitions/models.GradeResponse"
                             }
                         }
                     },
@@ -158,12 +158,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Nueva información de la calificación",
+                        "description": "Nueva calificación",
                         "name": "grade",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Grade"
+                            "$ref": "#/definitions/models.UpdateGradeRequest"
                         }
                     }
                 ],
@@ -179,7 +179,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.Grade"
+                                            "$ref": "#/definitions/models.GradeResponse"
                                         }
                                     }
                                 }
@@ -282,7 +282,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Grade"
+                            "$ref": "#/definitions/models.GradeResponse"
                         }
                     },
                     "400": {
@@ -755,7 +755,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.Grade": {
+        "models.CreateGradeRequest": {
             "type": "object",
             "required": [
                 "grade",
@@ -769,24 +769,41 @@ const docTemplate = `{
                     "minimum": 0,
                     "example": 95.5
                 },
-                "grade_id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "student": {
-                    "$ref": "#/definitions/models.Student"
-                },
                 "student_id": {
                     "type": "integer",
                     "minimum": 1,
                     "example": 1
                 },
-                "subject": {
-                    "$ref": "#/definitions/models.Subject"
-                },
                 "subject_id": {
                     "type": "integer",
                     "minimum": 1,
+                    "example": 1
+                }
+            }
+        },
+        "models.GradeResponse": {
+            "type": "object",
+            "properties": {
+                "grade": {
+                    "type": "number",
+                    "example": 95.5
+                },
+                "grade_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "student": {
+                    "$ref": "#/definitions/models.StudentBasic"
+                },
+                "student_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "subject": {
+                    "$ref": "#/definitions/models.SubjectBasic"
+                },
+                "subject_id": {
+                    "type": "integer",
                     "example": 1
                 }
             }
@@ -821,6 +838,27 @@ const docTemplate = `{
                 }
             }
         },
+        "models.StudentBasic": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "maria@escuela.com"
+                },
+                "group": {
+                    "type": "string",
+                    "example": "5A"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "María García"
+                },
+                "student_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
         "models.Subject": {
             "type": "object",
             "required": [
@@ -836,6 +874,33 @@ const docTemplate = `{
                 "subject_id": {
                     "type": "integer",
                     "example": 1
+                }
+            }
+        },
+        "models.SubjectBasic": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "Matemáticas"
+                },
+                "subject_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "models.UpdateGradeRequest": {
+            "type": "object",
+            "required": [
+                "grade"
+            ],
+            "properties": {
+                "grade": {
+                    "type": "number",
+                    "maximum": 100,
+                    "minimum": 0,
+                    "example": 98
                 }
             }
         },
@@ -869,10 +934,9 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api",
 	Schemes:          []string{"http"},
 	Title:            "API de Control Escolar",
-	Description:      "API REST para la gestión de estudiantes, materias y calificaciones",
+	Description:      "API REST para la gestión de estudiantes, materias y calificaciones en un sistema escolar",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
-
 }
 
 func init() {

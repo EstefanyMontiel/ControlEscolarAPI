@@ -1,23 +1,16 @@
 basePath: /api
 definitions:
-  models.Grade:
+  models.CreateGradeRequest:
     properties:
       grade:
         example: 95.5
         maximum: 100
         minimum: 0
         type: number
-      grade_id:
-        example: 1
-        type: integer
-      student:
-        $ref: '#/definitions/models.Student'
       student_id:
         example: 1
         minimum: 1
         type: integer
-      subject:
-        $ref: '#/definitions/models.Subject'
       subject_id:
         example: 1
         minimum: 1
@@ -26,6 +19,25 @@ definitions:
     - grade
     - student_id
     - subject_id
+    type: object
+  models.GradeResponse:
+    properties:
+      grade:
+        example: 95.5
+        type: number
+      grade_id:
+        example: 1
+        type: integer
+      student:
+        $ref: '#/definitions/models.StudentBasic'
+      student_id:
+        example: 1
+        type: integer
+      subject:
+        $ref: '#/definitions/models.SubjectBasic'
+      subject_id:
+        example: 1
+        type: integer
     type: object
   models.Student:
     properties:
@@ -50,6 +62,21 @@ definitions:
     - group
     - name
     type: object
+  models.StudentBasic:
+    properties:
+      email:
+        example: maria@escuela.com
+        type: string
+      group:
+        example: 5A
+        type: string
+      name:
+        example: María García
+        type: string
+      student_id:
+        example: 1
+        type: integer
+    type: object
   models.Subject:
     properties:
       name:
@@ -62,6 +89,25 @@ definitions:
         type: integer
     required:
     - name
+    type: object
+  models.SubjectBasic:
+    properties:
+      name:
+        example: Matemáticas
+        type: string
+      subject_id:
+        example: 1
+        type: integer
+    type: object
+  models.UpdateGradeRequest:
+    properties:
+      grade:
+        example: 98
+        maximum: 100
+        minimum: 0
+        type: number
+    required:
+    - grade
     type: object
   utils.ErrorResponse:
     properties:
@@ -80,8 +126,9 @@ host: localhost:8082
 info:
   contact:
     email: estefany.montiel@example.com
-    name: Soporte API
+    name: Estefany Montiel
   description: API REST para la gestión de estudiantes, materias y calificaciones
+    en un sistema escolar
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
@@ -99,7 +146,7 @@ paths:
         name: grade
         required: true
         schema:
-          $ref: '#/definitions/models.Grade'
+          $ref: '#/definitions/models.CreateGradeRequest'
       produces:
       - application/json
       responses:
@@ -110,7 +157,7 @@ paths:
             - $ref: '#/definitions/utils.SuccessResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/models.Grade'
+                  $ref: '#/definitions/models.GradeResponse'
               type: object
         "400":
           description: Bad Request
@@ -168,12 +215,12 @@ paths:
         name: grade_id
         required: true
         type: integer
-      - description: Nueva información de la calificación
+      - description: Nueva calificación
         in: body
         name: grade
         required: true
         schema:
-          $ref: '#/definitions/models.Grade'
+          $ref: '#/definitions/models.UpdateGradeRequest'
       produces:
       - application/json
       responses:
@@ -184,7 +231,7 @@ paths:
             - $ref: '#/definitions/utils.SuccessResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/models.Grade'
+                  $ref: '#/definitions/models.GradeResponse'
               type: object
         "400":
           description: Bad Request
@@ -222,7 +269,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Grade'
+            $ref: '#/definitions/models.GradeResponse'
         "400":
           description: Bad Request
           schema:
@@ -251,7 +298,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Grade'
+              $ref: '#/definitions/models.GradeResponse'
             type: array
         "400":
           description: Bad Request
