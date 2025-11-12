@@ -3,6 +3,7 @@ package handlers
 import (
     "net/http"
     "strconv"
+    "log"
     
     "github.com/gin-gonic/gin"
     "ControlEscolar/config"
@@ -11,23 +12,28 @@ import (
 )
 
 // CreateStudent maneja POST /api/students
+// CreateStudent maneja POST /api/students
 func CreateStudent(c *gin.Context) {
     var student models.Student
     
     // Validar el JSON de entrada
     if err := c.ShouldBindJSON(&student); err != nil {
+        // Log del error para debugging
+        log.Printf("Error en validación: %v", err)
         utils.RespondWithError(c, http.StatusBadRequest, "Datos inválidos: "+err.Error())
         return
     }
     
     // Crear el estudiante en la base de datos
     if err := config.GetDB().Create(&student).Error; err != nil {
+        log.Printf("Error al crear estudiante: %v", err)
         utils.RespondWithError(c, http.StatusInternalServerError, "Error al crear el estudiante")
         return
     }
     
     utils.RespondWithSuccess(c, http.StatusCreated, "Estudiante creado exitosamente", student)
 }
+
 
 // GetAllStudents maneja GET /api/students
 func GetAllStudents(c *gin.Context) {
