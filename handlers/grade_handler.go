@@ -11,7 +11,18 @@ import (
     "ControlEscolar/utils"
 )
 
-// CreateGrade maneja POST /api/grades
+// CreateGrade godoc
+// @Summary      Crear una nueva calificación
+// @Description  Registra una nueva calificación para un estudiante en una materia
+// @Tags         grades
+// @Accept       json
+// @Produce      json
+// @Param        grade  body      models.Grade  true  "Información de la calificación"
+// @Success      201    {object}  utils.SuccessResponse{data=models.Grade}
+// @Failure      400    {object}  utils.ErrorResponse
+// @Failure      404    {object}  utils.ErrorResponse
+// @Failure      500    {object}  utils.ErrorResponse
+// @Router       /grades [post]
 func CreateGrade(c *gin.Context) {
     var grade models.Grade
     
@@ -42,7 +53,19 @@ func CreateGrade(c *gin.Context) {
     utils.RespondWithSuccess(c, http.StatusCreated, "Calificación creada exitosamente", grade)
 }
 
-// UpdateGrade maneja PUT /api/grades/:grade_id
+// UpdateGrade godoc
+// @Summary      Actualizar una calificación
+// @Description  Actualiza el valor de una calificación existente
+// @Tags         grades
+// @Accept       json
+// @Produce      json
+// @Param        grade_id  path      int           true  "ID de la calificación"
+// @Param        grade     body      models.Grade  true  "Nueva información de la calificación"
+// @Success      200       {object}  utils.SuccessResponse{data=models.Grade}
+// @Failure      400       {object}  utils.ErrorResponse
+// @Failure      404       {object}  utils.ErrorResponse
+// @Failure      500       {object}  utils.ErrorResponse
+// @Router       /grades/{grade_id} [put]
 func UpdateGrade(c *gin.Context) {
     id, err := strconv.Atoi(c.Param("grade_id"))
     if err != nil {
@@ -72,7 +95,17 @@ func UpdateGrade(c *gin.Context) {
     utils.RespondWithSuccess(c, http.StatusOK, "Calificación actualizada exitosamente", grade)
 }
 
-// DeleteGrade maneja DELETE /api/grades/:grade_id
+// DeleteGrade godoc
+// @Summary      Eliminar una calificación
+// @Description  Elimina una calificación del sistema
+// @Tags         grades
+// @Produce      json
+// @Param        grade_id  path      int  true  "ID de la calificación"
+// @Success      200       {object}  utils.SuccessResponse
+// @Failure      400       {object}  utils.ErrorResponse
+// @Failure      404       {object}  utils.ErrorResponse
+// @Failure      500       {object}  utils.ErrorResponse
+// @Router       /grades/{grade_id} [delete]
 func DeleteGrade(c *gin.Context) {
     id, err := strconv.Atoi(c.Param("grade_id"))
     if err != nil {
@@ -94,7 +127,17 @@ func DeleteGrade(c *gin.Context) {
     utils.RespondWithSuccess(c, http.StatusOK, "Calificación eliminada exitosamente", nil)
 }
 
-// GetGradeByStudentAndSubject maneja GET /api/grades/:grade_id/student/:student_id
+// GetGradeByStudentAndSubject godoc
+// @Summary      Obtener calificación específica
+// @Description  Obtiene una calificación específica de un estudiante por grade_id y student_id
+// @Tags         grades
+// @Produce      json
+// @Param        grade_id    path      int  true  "ID de la calificación"
+// @Param        student_id  path      int  true  "ID del estudiante"
+// @Success      200         {object}  models.Grade
+// @Failure      400         {object}  utils.ErrorResponse
+// @Failure      404         {object}  utils.ErrorResponse
+// @Router       /grades/{grade_id}/student/{student_id} [get]
 func GetGradeByStudentAndSubject(c *gin.Context) {
     gradeID, err := strconv.Atoi(c.Param("grade_id"))
     if err != nil {
@@ -118,22 +161,21 @@ func GetGradeByStudentAndSubject(c *gin.Context) {
         return
     }
     
-    // Obtener información del estudiante
-    var student models.Student
-    if err := config.GetDB().First(&student, grade.StudentID).Error; err == nil {
-        grade.Student = &student
-    }
-    
-    // Obtener información de la materia
-    var subject models.Subject
-    if err := config.GetDB().First(&subject, grade.SubjectID).Error; err == nil {
-        grade.Subject = &subject
-    }
     
     c.JSON(http.StatusOK, grade)
 }
 
-// GetStudentGrades maneja GET /api/grades/student/:student_id
+// GetStudentGrades godoc
+// @Summary      Obtener todas las calificaciones de un estudiante
+// @Description  Obtiene todas las calificaciones registradas para un estudiante específico
+// @Tags         grades
+// @Produce      json
+// @Param        student_id  path      int  true  "ID del estudiante"
+// @Success      200         {array}   models.Grade
+// @Failure      400         {object}  utils.ErrorResponse
+// @Failure      404         {object}  utils.ErrorResponse
+// @Failure      500         {object}  utils.ErrorResponse
+// @Router       /grades/student/{student_id} [get]
 func GetStudentGrades(c *gin.Context) {
     studentID, err := strconv.Atoi(c.Param("student_id"))
     if err != nil {
@@ -162,7 +204,6 @@ func GetStudentGrades(c *gin.Context) {
     for i := range grades {
         var subject models.Subject
         if err := config.GetDB().First(&subject, grades[i].SubjectID).Error; err == nil {
-            grades[i].Subject = &subject
         }
     }
     

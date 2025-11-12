@@ -5,13 +5,22 @@ import (
     "strconv"
     
     "github.com/gin-gonic/gin"
-	"ControlEscolar/config"
+    "ControlEscolar/config"
     "ControlEscolar/models"
     "ControlEscolar/utils"
-
 )
 
-// CreateSubject maneja POST /api/subjects
+// CreateSubject godoc
+// @Summary      Crear una nueva materia
+// @Description  Registra una nueva materia en el sistema
+// @Tags         subjects
+// @Accept       json
+// @Produce      json
+// @Param        subject  body      models.Subject  true  "Información de la materia"
+// @Success      201      {object}  utils.SuccessResponse{data=models.Subject}
+// @Failure      400      {object}  utils.ErrorResponse
+// @Failure      500      {object}  utils.ErrorResponse
+// @Router       /subjects [post]
 func CreateSubject(c *gin.Context) {
     var subject models.Subject
     
@@ -28,7 +37,16 @@ func CreateSubject(c *gin.Context) {
     utils.RespondWithSuccess(c, http.StatusCreated, "Materia creada exitosamente", subject)
 }
 
-// GetSubject maneja GET /api/subjects/:subject_id
+// GetSubject godoc
+// @Summary      Obtener una materia por ID
+// @Description  Obtiene la información de una materia específica
+// @Tags         subjects
+// @Produce      json
+// @Param        subject_id  path      int  true  "ID de la materia"
+// @Success      200         {object}  models.Subject
+// @Failure      400         {object}  utils.ErrorResponse
+// @Failure      404         {object}  utils.ErrorResponse
+// @Router       /subjects/{subject_id} [get]
 func GetSubject(c *gin.Context) {
     id, err := strconv.Atoi(c.Param("subject_id"))
     if err != nil {
@@ -45,7 +63,19 @@ func GetSubject(c *gin.Context) {
     c.JSON(http.StatusOK, subject)
 }
 
-// UpdateSubject maneja PUT /api/subjects/:subject_id
+// UpdateSubject godoc
+// @Summary      Actualizar una materia
+// @Description  Actualiza la información de una materia existente
+// @Tags         subjects
+// @Accept       json
+// @Produce      json
+// @Param        subject_id  path      int             true  "ID de la materia"
+// @Param        subject     body      models.Subject  true  "Información actualizada de la materia"
+// @Success      200         {object}  utils.SuccessResponse{data=models.Subject}
+// @Failure      400         {object}  utils.ErrorResponse
+// @Failure      404         {object}  utils.ErrorResponse
+// @Failure      500         {object}  utils.ErrorResponse
+// @Router       /subjects/{subject_id} [put]
 func UpdateSubject(c *gin.Context) {
     id, err := strconv.Atoi(c.Param("subject_id"))
     if err != nil {
@@ -75,7 +105,17 @@ func UpdateSubject(c *gin.Context) {
     utils.RespondWithSuccess(c, http.StatusOK, "Materia actualizada exitosamente", subject)
 }
 
-// DeleteSubject maneja DELETE /api/subjects/:subject_id
+// DeleteSubject godoc
+// @Summary      Eliminar una materia
+// @Description  Elimina una materia del sistema (también elimina sus calificaciones por CASCADE)
+// @Tags         subjects
+// @Produce      json
+// @Param        subject_id  path      int  true  "ID de la materia"
+// @Success      200         {object}  utils.SuccessResponse
+// @Failure      400         {object}  utils.ErrorResponse
+// @Failure      404         {object}  utils.ErrorResponse
+// @Failure      500         {object}  utils.ErrorResponse
+// @Router       /subjects/{subject_id} [delete]
 func DeleteSubject(c *gin.Context) {
     id, err := strconv.Atoi(c.Param("subject_id"))
     if err != nil {
