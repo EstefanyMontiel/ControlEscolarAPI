@@ -1,0 +1,610 @@
+basePath: /api
+definitions:
+  models.CreateGradeRequest:
+    properties:
+      grade:
+        example: 95.5
+        maximum: 100
+        minimum: 0
+        type: number
+      student_id:
+        example: 1
+        minimum: 1
+        type: integer
+      subject_id:
+        example: 1
+        minimum: 1
+        type: integer
+    required:
+    - grade
+    - student_id
+    - subject_id
+    type: object
+  models.GradeResponse:
+    properties:
+      grade:
+        example: 95.5
+        type: number
+      grade_id:
+        example: 1
+        type: integer
+      student:
+        $ref: '#/definitions/models.StudentBasic'
+      student_id:
+        example: 1
+        type: integer
+      subject:
+        $ref: '#/definitions/models.SubjectBasic'
+      subject_id:
+        example: 1
+        type: integer
+    type: object
+  models.Student:
+    properties:
+      email:
+        example: maria.garcia@escuela.com
+        type: string
+      group:
+        example: 5A
+        maxLength: 10
+        minLength: 1
+        type: string
+      name:
+        example: María García
+        maxLength: 100
+        minLength: 2
+        type: string
+      student_id:
+        example: 1
+        type: integer
+    required:
+    - email
+    - group
+    - name
+    type: object
+  models.StudentBasic:
+    properties:
+      email:
+        example: maria@escuela.com
+        type: string
+      group:
+        example: 5A
+        type: string
+      name:
+        example: María García
+        type: string
+      student_id:
+        example: 1
+        type: integer
+    type: object
+  models.Subject:
+    properties:
+      name:
+        example: Matemáticas
+        maxLength: 100
+        minLength: 2
+        type: string
+      subject_id:
+        example: 1
+        type: integer
+    required:
+    - name
+    type: object
+  models.SubjectBasic:
+    properties:
+      name:
+        example: Matemáticas
+        type: string
+      subject_id:
+        example: 1
+        type: integer
+    type: object
+  models.UpdateGradeRequest:
+    properties:
+      grade:
+        example: 98
+        maximum: 100
+        minimum: 0
+        type: number
+    required:
+    - grade
+    type: object
+  utils.ErrorResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  utils.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+host: localhost:8082
+info:
+  contact:
+    email: estefany.montiel@example.com
+    name: Estefany Montiel
+  description: API REST para la gestión de estudiantes, materias y calificaciones
+    en un sistema escolar
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: API de Control Escolar
+  version: "1.0"
+paths:
+  /grades:
+    post:
+      consumes:
+      - application/json
+      description: Registra una nueva calificación para un estudiante en una materia
+      parameters:
+      - description: Información de la calificación
+        in: body
+        name: grade
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateGradeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.GradeResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Crear una nueva calificación
+      tags:
+      - grades
+  /grades/{grade_id}:
+    delete:
+      description: Elimina una calificación del sistema
+      parameters:
+      - description: ID de la calificación
+        in: path
+        name: grade_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Eliminar una calificación
+      tags:
+      - grades
+    put:
+      consumes:
+      - application/json
+      description: Actualiza el valor de una calificación existente
+      parameters:
+      - description: ID de la calificación
+        in: path
+        name: grade_id
+        required: true
+        type: integer
+      - description: Nueva calificación
+        in: body
+        name: grade
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateGradeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.GradeResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Actualizar una calificación
+      tags:
+      - grades
+  /grades/{grade_id}/student/{student_id}:
+    get:
+      description: Obtiene una calificación específica de un estudiante por grade_id
+        y student_id
+      parameters:
+      - description: ID de la calificación
+        in: path
+        name: grade_id
+        required: true
+        type: integer
+      - description: ID del estudiante
+        in: path
+        name: student_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GradeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Obtener calificación específica
+      tags:
+      - grades
+  /grades/student/{student_id}:
+    get:
+      description: Obtiene todas las calificaciones registradas para un estudiante
+        específico
+      parameters:
+      - description: ID del estudiante
+        in: path
+        name: student_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.GradeResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Obtener todas las calificaciones de un estudiante
+      tags:
+      - grades
+  /students:
+    get:
+      description: Obtiene la lista completa de estudiantes registrados
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Student'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Listar todos los estudiantes
+      tags:
+      - students
+    post:
+      consumes:
+      - application/json
+      description: Registra un nuevo estudiante en el sistema
+      parameters:
+      - description: Información del estudiante
+        in: body
+        name: student
+        required: true
+        schema:
+          $ref: '#/definitions/models.Student'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Student'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Crear un nuevo estudiante
+      tags:
+      - students
+  /students/{student_id}:
+    delete:
+      description: Elimina un estudiante del sistema (también elimina sus calificaciones
+        por CASCADE)
+      parameters:
+      - description: ID del estudiante
+        in: path
+        name: student_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Eliminar un estudiante
+      tags:
+      - students
+    get:
+      description: Obtiene la información detallada de un estudiante específico
+      parameters:
+      - description: ID del estudiante
+        in: path
+        name: student_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Student'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Obtener un estudiante por ID
+      tags:
+      - students
+    put:
+      consumes:
+      - application/json
+      description: Actualiza la información de un estudiante existente
+      parameters:
+      - description: ID del estudiante
+        in: path
+        name: student_id
+        required: true
+        type: integer
+      - description: Información actualizada del estudiante
+        in: body
+        name: student
+        required: true
+        schema:
+          $ref: '#/definitions/models.Student'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Student'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Actualizar un estudiante
+      tags:
+      - students
+  /subjects:
+    post:
+      consumes:
+      - application/json
+      description: Registra una nueva materia en el sistema
+      parameters:
+      - description: Información de la materia
+        in: body
+        name: subject
+        required: true
+        schema:
+          $ref: '#/definitions/models.Subject'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Subject'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Crear una nueva materia
+      tags:
+      - subjects
+  /subjects/{subject_id}:
+    delete:
+      description: Elimina una materia del sistema (también elimina sus calificaciones
+        por CASCADE)
+      parameters:
+      - description: ID de la materia
+        in: path
+        name: subject_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Eliminar una materia
+      tags:
+      - subjects
+    get:
+      description: Obtiene la información de una materia específica
+      parameters:
+      - description: ID de la materia
+        in: path
+        name: subject_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Subject'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Obtener una materia por ID
+      tags:
+      - subjects
+    put:
+      consumes:
+      - application/json
+      description: Actualiza la información de una materia existente
+      parameters:
+      - description: ID de la materia
+        in: path
+        name: subject_id
+        required: true
+        type: integer
+      - description: Información actualizada de la materia
+        in: body
+        name: subject
+        required: true
+        schema:
+          $ref: '#/definitions/models.Subject'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Subject'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Actualizar una materia
+      tags:
+      - subjects
+schemes:
+- http
+swagger: "2.0"

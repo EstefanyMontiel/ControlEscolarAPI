@@ -6,11 +6,30 @@ import (
     
     "github.com/gin-gonic/gin"
     "github.com/joho/godotenv"
+    swaggerFiles "github.com/swaggo/files"
+    ginSwagger "github.com/swaggo/gin-swagger"
+    
     "ControlEscolar/config"
     "ControlEscolar/models"
     "ControlEscolar/routes"
+    
+    _ "ControlEscolar/docs"
 )
 
+// @title           API de Control Escolar
+// @version         1.0
+// @description     API REST para la gestión de estudiantes, materias y calificaciones en un sistema escolar
+
+// @contact.name   Estefany Montiel
+// @contact.email  estefany.montiel@example.com
+
+// @license.name  MIT
+// @license.url   https://opensource.org/licenses/MIT
+
+// @host      localhost:8082
+// @BasePath  /api
+
+// @schemes http
 func main() {
     // Cargar variables de entorno
     err := godotenv.Load()
@@ -24,58 +43,50 @@ func main() {
     config.InitDatabase()
     
     db := config.GetDB()
-        
-    // Paso 1: Crear tablas padre (sin llaves foráneas)
-    log.Println("📦 Creando tablas padre...")
+    
+    // Ejecutar migraciones
+    log.Println("📦 Ejecutando migraciones...")
     if err := models.MigrateStudent(db); err != nil {
         log.Fatal("❌ Error en migración de estudiantes:", err)
     }
-    log.Println("✅ Tabla students creada")
-    
     if err := models.MigrateSubject(db); err != nil {
         log.Fatal("❌ Error en migración de materias:", err)
     }
-    log.Println("✅ Tabla subjects creada")
-    
-    // Paso 2: Crear tabla hija (sin llaves foráneas todavía)
-    log.Println("📦 Creando tabla grades...")
     if err := models.MigrateGrade(db); err != nil {
         log.Fatal("❌ Error en migración de calificaciones:", err)
     }
-    log.Println("✅ Tabla grades creada")
     
-    // Paso 3: Agregar llaves foráneas
-    log.Println("🔗 Agregando llaves foráneas...")
+    // Agregar llaves foráneas
     if err := models.AddForeignKeys(db); err != nil {
         log.Println("⚠️  Advertencia al agregar llaves foráneas:", err)
-    } else {
-        log.Println("✅ Llaves foráneas agregadas")
     }
     
-    log.Println("✅ Todas las migraciones ejecutadas exitosamente")
+    log.Println("✅ Base de datos lista")
     
     // Configurar Gin
     router := gin.Default()
-    
-    // Configurar proxies confiables (quita el warning)
     router.SetTrustedProxies(nil)
     
     // Middleware para CORS
     router.Use(CORSMiddleware())
     
-    // Configurar rutas
+    // Configurar rutas de la API
     routes.SetupRoutes(router)
     
-    // Ruta de prueba
+    // Ruta principal
     router.GET("/", func(c *gin.Context) {
         c.JSON(200, gin.H{
-            "message": "API de Control Escolar - Sistema funcionando correctamente",
+            "message": "API de Control Escolar",
             "version": "1.0.0",
-            "database": "MySQL",
+            "status":  "running",
+            "docs":    "http://localhost:8082/swagger/index.html",
         })
     })
     
-    // Obtener puerto desde variable de entorno
+    // Ruta para Swagger UI
+    router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+    
+    // Obtener puerto
     port := os.Getenv("PORT")
     if port == "" {
         port = "8082"
@@ -83,6 +94,9 @@ func main() {
     
     // Iniciar servidor
     log.Printf("🚀 Servidor iniciado en http://localhost:%s\n", port)
+    log.Printf("📚 Documentación Swagger: http://localhost:%s/swagger/index.html\n", port)
+    log.Printf("🔍 Prueba las rutas: http://localhost:%s/api/students\n", port)
+    
     if err := router.Run(":" + port); err != nil {
         log.Fatal("❌ Error al iniciar servidor:", err)
     }
